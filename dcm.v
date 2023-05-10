@@ -1,32 +1,85 @@
-module dcm 
-(
-    input rst,
-    input clk,
-    input [2:0] prog_in, // indica qual frequencia o clk lento deve operar
-    input update,        // indica que o clk lento deve ser atualizado para a freq indicada pelo prog_in 
-    output reg clk_1,    // clk rapido gerado em 10Hz
-    output reg clk_2,    //clk lento gerado q opera entre 10Hz e 78.125MHz
-    output reg [2:0] prog_out //sinal de programacao de saida da freq do clk lento 
-);
+`timescale 1ns/1ns
 
-  reg [2:0] mode;
+module dcm_tb;
 
-  always @(posedge clk or posedge rst) begin
-    if(rst) begin
-      //zerar tudo, estartar as coisas
-    end
-    else begin
-      case (mode)
-        3'b000 :
-        3'b001 :
-        3'b010 :
-        3'b011 :
-        3'b100 :
-        3'b101 :
-        3'b110 :
-        default : clk_2 = xxxxxx;
-      endcase
-    end
+  // parâmetros do Testbench
+  parameter PERIOD = 10;
+  parameter RST_PERIOD = PERIOD * 2;
+  parameter CLK_PERIOD = PERIOD / 10;
+  parameter SIM_TIME = PERIOD * 100;
+
+  // sinais do Testbench
+  reg rst;
+  reg clk;
+  reg [2:0] prog_in;
+  reg update;
+  wire clk_1;
+  wire clk_2;
+  wire [2:0] prog_out;
+
+  // instância do DCM
+  dcm dcm_inst (
+    .rst(rst),
+    .clk(clk),
+    .prog_in(prog_in),
+    .update(update),
+    .clk_1(clk_1),
+    .clk_2(clk_2),
+    .prog_out(prog_out)
+  );
+
+  // gerador do clock de referência (100 MHz)
+  always #CLK_PERIOD clk = !clk;
+
+  // gerador do sinal de reset (ativo alto)
+  initial begin
+    rst = 1;
+    #RST_PERIOD rst = 0;
+  end
+
+  // estímulos para teste do DCM
+  initial begin
+    // testando clock lento em diferentes modos
+    prog_in = 3'b000;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b001;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b010;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b011;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b100;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b101;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b110;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    prog_in = 3'b111;
+    update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
+    // testando atualização do clock lento sem mudar o modo
+    prog_in = 3'b001;
+    update = 1;
+    #PERIOD update = 0;
+    #PERIOD update = 1;
+    #PERIOD update = 0;
+    #SIM_TIME;
   end
 
 endmodule
+
